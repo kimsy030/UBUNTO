@@ -1,0 +1,48 @@
+시스템 호출(system call), 표준 라이브러리 함수
+(Standard Library Function)
+  사용
+파일을 다루기 위한 시스템 호출/표준 라이브러리 함수
+    함수    의미
+    open    이미 존재하는 파일을 읽기 또는 쓰기용으로 열거나, 새로운 파일을 생성하여 연다.
+    creat   새로운 파일을 생성하여 연다.
+    close   open 또는 creat로 열려진 파일을 닫는다.
+    read    열려진 파일로부터 데이터를 읽어 들인다.
+    write   열려진 파일에 데이터를 쓴다.
+    lseek   파일 안에서 읽기/쓰기 포인터를 지정한 바이트 위치로 이동한다.
+    unlink/remove   파일을 삭제한다.
+    
+/* program ex03-01.c */ 
+02 #include <sys/types.h> 
+03 #include <fcntl.h> 
+04 #include <unistd.h> 
+05
+06 main() 
+07 { 
+08 int filedes, fdnew1, fdnew2; // 파일 기술자로 사용된다.
+09 ssize_t nread; 
+10 off_t newpos; 
+11
+12 char buffer[1024]; // 읽어 들인 파일의 내용을 저장한 배열
+13 char content[] = "Hello my 
+friend!!\n"; 
+14
+15 filedes = open("data.txt", O_RDWR); //data.tat 파일을 연다
+16
+17 nread = read(filedes, buffer, 1024);// buffer 크기만큼 파일을 읽는다
+18 printf("%s",buffer);// buffer의 내용을 출력한다
+19
+20
+21 write(filedes, content, strlen(content)); // 배열 content의 내용을 파일에 적는다.
+22
+23 newpos = lseek(filedes, (off_t)0, SEEK_SET); // 읽기/쓰기 포인터를 이동한다.
+24 nread = read(filedes, buffer, 1024); // 파일의 내용을 읽는다.
+25 printf("%s", buffer); 
+26
+27 close(filedes); // 개방된 파일을 닫는다.
+28
+29 fdnew1 = open("newdata1.txt", O_RDWR |O_CREAT, 0644); // 새로운 파일을 생성하여 연다.
+30 fdnew2 = creat("newdata2.txt", 0644); // 새로운 파일을 생성하여 연다.
+31
+32 close(fdnew1); close(fdnew2); 
+33 unlink("newdata2.txt");// 파일을 삭제한다.
+34}
