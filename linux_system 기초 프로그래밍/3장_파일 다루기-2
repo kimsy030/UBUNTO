@@ -1,1 +1,175 @@
+open 호출 실패에 대한 대비
+-open의 반환값으로 호출의 성공 여부를 확인할 수 있다.
+-호출 실패시 적절한 대응이 있어야 한다.
 
+시스템 호출이 실패했을 경우를 고려한 프로그램 코드
+…
+filedes = open("data.txt", O_RDONLY);
+/* filedes가 -1이면 open 호출이 실패했다. */
+if(filedes == -1)
+{
+printf("file open error!\n");
+exit(1);
+}
+
+개방된 상태의 파일을 닫는다
+
+#include <unistd.h>
+
+int close(int filedes);
+
+filedes : 이전에 open이나 creat에 의해 개방된 파일의 파일 기술자이다. 
+반환값  : 작업이 성공할 경우 0이 반환되며, 실패할 경우 -1이 반환된다.
+
+open이나 creat에 의해 개방된 파일을 닫는다.
+-할당 받은 파일 기술자를 반환한다.
+
+개방된 파일을 사용이 끝나면 반드시 닫아주어야 한다.
+-하나의 프로세스가 동시에 개방할 수 있는 파일의 수는 제한되어 있음
+-시스템 차원에서 동시에 개방할 수 있는 파일의 수는 제한되어 있음
+
+/* 파일을 읽기 전용 상태로 개방한다. */ 
+filedes = open("data.txt", O_RDONLY); 
+… 
+/* data.txt를 사용하는 코드가 위치 */ 
+… 
+close(filedes);
+
+개방된 파일은 사용이 끝난 후 반드시 닫아준다.
+
+개방된 파일을 닫지 않고 프로그램이 종료한 경우
+-프로그램이 종료할 때 개방된 파일은 커널에 의해 자동으로 닫힌다.
+-이런 사실을 알고 있더라도 사용된 파일은 마지막에 닫아주는 것이 좋다.
+
+O_CREAT 플래그
+-open으로 새로운 파일을 생성할 때 사용한다.
+-filedes = open(“/tmp/tmpfile.txt”, O_RDWR | O_CREAT, 0644);
+
+-O_RDWR
+•새롭게 생성된 파일은 읽기와 쓰기가 가능하다.
+
+-O_CREAT
+•/tmp/tmpfile.txt가 존재하지 않을 경우 새롭게 생성한다.
+•새로운 파일을 생성할 때 반드시 사용해야 한다.
+
+-0644
+•새롭게 생성된 파일의 접근 권한은 0644이다.
+•rw-r--r--
+
+01 #include <stdlib.h> 
+02 #include <fcntl.h> 
+03
+04 int main() 
+05 { 
+06 int filedes; 
+07 char pathname[] = "temp.txt"; 
+08
+09 if((filedes = open(pathname, O_CREAT | 
+O_RDWR, 0644)) == -1) 
+10 { 
+11 printf("file open error!\n"); 
+12 exit(1); 
+13 } 
+14
+15 close(filedes); 
+16 }
+
+O_EXCK 플래그
+이미 존재하는 파일을 O_CREAT 플래그를 사용하여 개방할 때O_EXCL 
+플래그가 파일의 개방을 막는다. (즉 개방이 실패한다.)
+
+-이런 경우 사용한다..
+  -이미 존재하는 파일을 O_CREAT 플래그를 사용하여 개방하면 기존의 내용을 수정하는
+  실수를 범할 수 있다.
+  -O_EXCL 플래그를 사용하여 개방 자체를 실패하게 한다.
+
+filedes = open(pathname, O_CREAT | O_RDWR | O_EXCL, 0644);
+
+  -pathname에 해당하는 파일이 존재하지 않으면 새롭게 생성한 후에 읽기와 쓰기가 가능
+  한 상태로 만들고 접근 권한은 0644이다.
+  -이미 존재하면 open이 실패한다.
+  
+파일 개방에 사용되는 플래그
+O_RDONLY |파일을 읽기 전용으로 개방한다. 읽기 이외의 다른 작업을 수행할 수 없다.
+O_WRONLY |파일을 쓰기 전용으로 개방한다. 쓰기 이외의 다른 작업을 수행할 수 없다.
+O_RDWR |파일을 읽기와 쓰기가 동시에 가능한 상태로 개방한다.
+O_CREAT |지정한 경로의 파일이 존재하지 않으면 새롭게 생성한 후 개방한다. 지정한 경로의 파일이 존재하면 지정한 상태로 개방한다.
+O_EXCL |지정한 경로의 파일이 존재하지 않으면 새롭게 생성하나, 지정한 경로의 파일
+이 존재하면 open 호출을 실패한다.
+(※O_CREAT 플래그와 함께 사용해야 한다.)
+O_APPEND |파일을 개방한 직후에 읽기/쓰기 포인터의 위치를 파일 내용의 마지막 바로 뒤로 이동한다.
+O_TRUNC |파일을 개방한 직후에 읽기/쓰기 포인터의 위치를 파일 내용의 첫 부분으로 이동한다.
+
+filedes = open(filename, O_RDWR);
+filename으로 지정한 파일을 읽기와 쓰기가 가능한 상태로 개방
+
+filedes = open(filename, O_RDONLY | O_CREAT);
+-filename으로 지정한 파일이 존재할 경우 읽기 전용으로 개방
+-만약 파일이 존재하지 않으면 새롭게 생성한 후 읽기 전용으로 개방
+(파일의 권한을 생략했기 때문에 기본 값으로 초기권한이 설정)
+
+filedes = open(filename, O_WRONLY | O_CREAT, 0644);
+-filename으로 지정한 파일이 존재할 경우 쓰기 전용으로 개방
+-만약 파일이 존재하지 않으면 새롭게 생성한 후 쓰기 전용으로 개방
+-초기 권한이 0644로 설정
+
+filedes = open(filename, O_WRONLY | O_CREAT | O_EXCL, 0644);
+-filename으로 지정한 파일이 존재하면 open의 수행이 실패
+- 만 약 에 파 일 이 존 재 하 지 않 으 면 초 기 권 한 0644 로 새 롭 게 파 일 을 생 성
+(쓰기 전용으로 개방)
+
+#include <sys/types.h> 
+#include <sys/stat.h> 
+#include <fcntl.h> 
+
+int creat(const char *pathname, mode_t mode); 
+
+pathname |개방할 파일의 경로 이름을 가지고 있는 문자열의 포인터이다. 
+
+mode |새롭게 생성하는 파일의 초기 접근 권한을 지정한다. creat는 존재하지 않
+는 파일을 새롭게 생성하는 것이 사용 목적이기 때문에 생략할 수 없다. 
+
+반환값 |정상적으로 파일을 개방하게 되면 파일 기술자를 반환하게 된다. 
+파일 개방이 실패할 경우 -1을 반환한다. 
+
+creat는 open을 다음의 플래그와 함께 사용하는 것과 같다.
+O_WRONLY, O_CREAT, O_TRUNC
+
+이미 존재하는 파일을 지정하여 creat를 사용하는 경우
+-해당 파일을 개방함과 동시에 파일이 가지고 있는 데이터를 모두 삭제한다
+
+filedes = creat(pathname, 0644);
+…
+filedes = open(pathmame, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+
+.creat에서 지정한 파일이 함부로 변경되어서는 안될 경우
+creat보다는 open을 O_EXCL 플래그와 함께 사용한다.
+
+예제 프로그램
+
+01 #include <fcntl.h> 
+02 
+03 int main() 
+04 { 
+05 int filedes1, filedes2; 
+06
+07 filedes1 = open("data1.txt", O_WRONLY | 
+O_CREAT | O_TRUNC, 0644); 
+08 filedes2 = creat("data2.txt", 0644); 
+09
+10 close(filedes1); 
+11 close(filedes2);
+12  }
+
+#include <unistd.h> 
+ssize_t read(int filedes, void *buf, size_t count); 
+
+filedes |읽기 작업을 수행할 파일에 대한 기술자이다. 
+buf |파일로부터 읽어 들인 내용을 저장하기 위한 공간이다. 일반적으로 배열을
+사용하게 되는데 배열의 데이터 형식은 어느 것이라도 상관없다. 
+count |읽어 들일 파일 내용의 크기를 지정한다. 바이트 단위로 기술한다. 
+반환값 |파일로부터 읽기 작업이 성공할 경우
+1) 읽어 들인 파일 내용의 바이트 크기가 반환 (1 이상의 값)
+2) 읽어 들인 내용이 없을 경우 (EOF일 경우) 0을 반환
+읽기 작업이 실패할 경우
+1) -1을 반환
