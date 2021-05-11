@@ -52,3 +52,15 @@ void error_handling(char *message)
 	fputc('\n', stderr);
 	exit(1);
 }
+
+/*
+# gcc bound_host1.c -o host1
+# ./host1 
+Usage : ./host1 <port>
+# ./host1 9190
+Message 1: Hi! 
+Message 2: I'm another UDP host! 
+Message 3: Nice to meet you 
+# 
+
+*/
