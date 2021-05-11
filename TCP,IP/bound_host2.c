@@ -47,3 +47,10 @@ void error_handling(char *message)
 	fputc('\n', stderr);
 	exit(1);
 }
+
+/*
+# gcc bound_host2.c -o host2
+# ./host2
+# ./host2 127.0.0.1 9190
+# 
+*/
