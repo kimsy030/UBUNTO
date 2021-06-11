@@ -1,0 +1,134 @@
+1. S/W 블록 초기화 
+ 1.1. S/W 블록 정보 저장
+     - S/W 블록 정보를 저장하고 있는 파일로부터 S/W 블록 저장용 구조체에 저장한다.
+     - S/W 블록 저장을 위한 구조체는 swArgv를 포함하여 저장한다.
+       struct swInfo
+	{
+               char swName[256];
+		char swArgv[4][256];
+	};
+ 1.2. S/W 블록 정보 획득
+     - 파일로부터 S/W 블록 정보를 획득한다.
+       파일에 기록된 한 줄 마다 S/W 블록 정보가 기술되어 있고, 
+       하나의 S/W 블록 정보에 대한 S/W Name, Argument는 “;”로 구분되어 있으므로, “;”로 토큰화한 후 공백을 삭제하여 저장한다.
+     - 슈도코드
+       void readFileList(void)
+       {
+		    while( !EOF)
+		    {
+    		  // FileList File로부터 S/W 정보를 한 줄 씩 획득한다.
+    		  // 획득한 S/W 정보를 “;”을 token으로하여 분리한다.
+	        // 공백을 삭제한 후 swInfo structure에 저장한다.
+		    }
+       }
+  1.3. S/W 블록 초기화 함수 2
+     - 초기화 및 재기동한 S/W 명, 초기화 및 재기동한 시점, 초기화 및 재기화한 사유, 초기화 및 재기동 회수를 구조체 배열에 저장
+     - 초기화 사유 값을 받으면 문자열로 바꿔 return 한다.
+     - S/W 블록 초기화 정보를 저장한 SwfirstInfo를 매개 변수로 받아서
+	./log/restart.txt에 기록한다.
+     - 인자로 받은 모든 S/W 블록을 초기화 한다.
+     - 슈도코드
+typdef struct SwfirstInfo
+｛
+		struct SwInfo swInfo; //블록 정보
+		pid_t_swpid; //pid
+		time_t start_time; //초기화 시간
+		int status; // 초기화 사유
+		int restar_count; //초기화 회수
+       int need_start;
+}
+
+char* reason_ToString(int status){
+	if(status == -9999){
+			//status값이 초기값인 –9999이면 init을 return
+	}
+  
+	if(WIFEXITED(status))// 자식이 정상적으로 종료
+	{
+			// status 값이 정상 종료된 프로세스면
+			// “Exit(WEXITSTATUS(status))”를 return
+	}else if(WIFSIGNALED(status)){ //참을 반환
+			//status 값이 signal로 종료된 프로세스면
+			//“Signal( WTERMSIG(status, 
+                      //strsignal(WTERMSIG(status))“를 반환
+	}
+}
+
+int writeSwLog(struct SwfirstInfo swfirstInfo)
+{
+	// SwfirstInfo안에 있는 정보중 swName, startTime
+	//status 값을 reasonToString함수로 문자열로 바꾼 값인
+	// restart_count 값을 ./log/restart.txt에 출력한다.
+}
+
+int swInitStart(int swBlock_Conunt, struct SwInfo* swInfos, struct SwfirstInfo* swfirstInfo)
+{
+	for(int i = 0; i < swBlock_Count; i++)
+	{
+		// swFork_Exec 함수로 SwInfo structure의 I번째 인덱스에 
+		해당하는
+		//S/W 블록을 argument와 함께 초기화한다.
+		if(pid < 0) return -1;
+		//SwfirstInfo structure array의 I번째 인덱스애 해당하는 
+		//요소의 swInfo 멤버 변수의 S/W 블록 정보를 초기화 
+		//./log/restart.txt에 기록  
+	} 
+	return 0;
+}
+
+2. S/W 블록 재초기화
+   2.1 S/W 블록 재생성 함수
+     - S/W 블록의 이름과 argument들을 받아 S/W 블록을 초기화 후 S/W 
+	블록의 pid 값을 반환한다.
+     - 슈도코드
+int swFork_Exec(const char* swName, char argv[4][256])
+{
+	//fork를 이용해  자식 프로세서 생성 
+	if(pid == 0)
+	{
+		//execl 함수를 통해 swBlock을 argv와 함께 초기화 
+	 } else if(pid > 0){
+	 	return pid;
+	 }
+	 return -1;
+}
+
+   2.2 S/W 블록 재초기화 함수
+     -SwfirstInfo structure array 각 요소에서 need_start 멤버변수가 1인 
+	S/W 블록을 받아 해당 S/W 블록을 재초기화 한다.
+     - 슈도코드
+int swRestart(struct SwfristInfo* swfirstInfo)
+{
+	// 인자로 받은 S/W 블록을 초기화
+	pid = swFork_Exec();
+	if(pid < 0) return -1;
+	//pid 및 현재시간 대입후 restart_count 멤버 변수 1증가 
+	// writeSwLog를 이용하여 재초기화 정보 기록 
+	return 0; 
+}
+
+3. S/W 블록 기동 정보 조회
+      - 인자로 받은 SwfirstInfo structure array의 모든 요소를 출력한다.
+      - 슈도코드
+int printSwfirstInfos(int swBlockCount, struct SwEarlyInfo* swEarlyInfo)
+{
+	for(int i = 0; i < swBlockCount; i++)
+	{
+		//SwfirstInfo structure array의 i번째 요소
+		//swName, startTime, status, restartCount 값을 출력  
+	}
+	return 0;
+}
+
+4. Test Case
+4.1. S/W 블록 초기화 Test
+4.1.1. Test Case 1. Text File Parsing 확인
+4.1.1.1. 사전 준비
+   - S/W block 및 S/W 블록 정보 파일을 준비한다.
+4.1.1.1. 시험 방법
+   - Text File을 준비하여 Application을 실행한다.
+4.1.1.2. 결과 확인 방법
+   - Application이 획득한 S/W block 정보를 확인한다.
+     (S/W 블록 기동 정보 조회 기능 활용)
+
+4.1.2. Test Case 2.
