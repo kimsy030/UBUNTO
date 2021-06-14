@@ -1,39 +1,20 @@
 #include <stdio.h>
-
 #include <time.h>
-
 #include <sys/time.h>
-
 #include <sys/stat.h>
-
 #include <sys/types.h>
-
 #include <unistd.h>
-
 #include <signal.h>
-
 #include <stdlib.h>
-
 #include <string.h>
 
- 
-
 #define LOGDIR "./AppLog"
-
 #define LOGFILE "mylog"
-
- 
-
 char *gettime(void)
-
 {
 
-struct timeval tv;
-
-gettimeofday(&tv, NULL);
-
- 
-
+ struct timeval tv;
+ gettimeofday(&tv, NULL);
 time_t t = (time_t) tv.tv_sec;
 
 struct tm *ptm = localtime(&t);
