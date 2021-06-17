@@ -10,7 +10,9 @@ void readFileList()
 {
   while(!EOF)
   {
-    
+    		// FileList File로부터 S/W 정보를 한 줄 씩 획득한다.
+    		// 획득한 S/W 정보를 “;”을 token으로하여 분리한다.
+	        // 공백을 삭제한 후 swInfo structure에 저장한다.
   }
 }
 
